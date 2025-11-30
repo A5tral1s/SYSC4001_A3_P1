@@ -60,10 +60,10 @@ std::tuple<std::string> run_simulation(std::vector<PCB> list_processes) {
                     process.state = NOT_ASSIGNED;
                     wait_queue.push_back(process);
                     job_list.push_back(process); //Add it to the list of processes
-}
+                }
             }
         }
-if(running.state == RUNNING){running.remaining_time = running.remaining_time -1;}
+        if(running.state == RUNNING){running.remaining_time = running.remaining_time -1;}
         ///////////////////////MANAGE WAIT QUEUE/////////////////////////
         //This mainly involves keeping track of how long a process must remain in the ready queue
             for(auto &process : job_list){
@@ -73,22 +73,24 @@ if(running.state == RUNNING){running.remaining_time = running.remaining_time -1;
                 idle_CPU(running);
             }}
             for(auto &process : job_list){
-            if(process.io_freq > 0){
-            if(process.PID == running.PID){
-                if((current_time - process.start_time) == process.io_freq){
-                    execution_status += print_exec_status(current_time, process.PID, process.state, WAITING);
-                    process.remaining_time = running.remaining_time;
-                    process.start_time = current_time;
-                    idle_CPU(running);
-                    process.state = WAITING;
-                    wait_queue.push_back(process);
+                if(process.io_freq > 0){
+                    if(process.PID == running.PID){
+                        if((current_time - process.start_time) == process.io_freq){
+                            execution_status += print_exec_status(current_time, process.PID, process.state, WAITING);
+                            process.remaining_time = running.remaining_time;
+                            process.start_time = current_time;
+                            idle_CPU(running);
+                            process.state = WAITING;
+                            wait_queue.push_back(process);
+                        }
+                    }
                 }
-}}}
+            }
             for(auto &process : wait_queue){
-            if((current_time - process.start_time) == process.io_duration && process.state == WAITING){
-                execution_status += print_exec_status(current_time, process.PID, process.state, READY);
-                process.state = READY;
-                ready_queue.push_back(process);
+                if((current_time - process.start_time) == process.io_duration && process.state == WAITING){
+                    execution_status += print_exec_status(current_time, process.PID, process.state, READY);
+                    process.state = READY;
+                    ready_queue.push_back(process);
 }}
         /////////////////////////////////////////////////////////////////
 
@@ -99,7 +101,7 @@ if(running.state == RUNNING){running.remaining_time = running.remaining_time -1;
         
         /////////////////////////////////////////////////////////////////
         if(running.PID == -1){
-        for(auto &process : ready_queue){
+            for(auto &process : ready_queue){
                 if(current_time >= process.arrival_time && process.state == READY){
                     execution_status += print_exec_status(current_time, process.PID, process.state, RUNNING);
                     if(process.remaining_time > 0){
@@ -112,20 +114,20 @@ if(running.state == RUNNING){running.remaining_time = running.remaining_time -1;
                         running.state = RUNNING;
                         run_process(process, job_list, ready_queue, current_time);
                         running.start_time = process.start_time;
-} else{
-                    execution_status += print_exec_status(current_time, process.PID, process.state, RUNNING);
-                    run_process(process, job_list, ready_queue, current_time);
-                    running.PID = process.PID;
-                    running.arrival_time = process.arrival_time;
-                    running.processing_time = process.processing_time;
-                    running.state = RUNNING;
-                    running.remaining_time = process.remaining_time;
-                    running.io_freq = process.io_freq;
-                    running.io_duration = process.io_duration;
-                    running.start_time = process.start_time;
+                    } else{
+                        execution_status += print_exec_status(current_time, process.PID, process.state, RUNNING);
+                        run_process(process, job_list, ready_queue, current_time);
+                        running.PID = process.PID;
+                        running.arrival_time = process.arrival_time;
+                        running.processing_time = process.processing_time;
+                        running.state = RUNNING;
+                        running.remaining_time = process.remaining_time;
+                        running.io_freq = process.io_freq;
+                        running.io_duration = process.io_duration;
+                        running.start_time = process.start_time;
                 }
             }}}
-current_time += 1;
+        current_time += 1;
 
     }
     
