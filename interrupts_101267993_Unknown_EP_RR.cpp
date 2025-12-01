@@ -40,6 +40,7 @@ std::tuple<std::string /* add std::string for bonus mark */ > run_simulation(std
     int selected = 0;
     std::vector<PCB> finished;
     PCB running;
+    int next = -1;
 
     //Initialize an empty running process
     idle_CPU(running);
@@ -112,19 +113,20 @@ if(current_time - running.start_time == 100 && running.processing_time > 100 && 
             }
             if(process.io_freq > 0){
             if(process == running){
-                if(current_time - running.start_time == process.io_freq && process.state == RUNNING) {
+                if(current_time == next && process.state == RUNNING) {
                     execution_status += print_exec_status(current_time, process.PID, process.state, WAITING);
+                    next = -1;
                     process.remaining_time -= process.io_freq;
                     process.start_time = current_time;
                     idle_CPU(running);
+                    running.start_time = 0;
                     process.state = WAITING;
                     process.io_saved = process.holder;
-                    process.io_freq = process.holder;
                     sync_queue(job_list, process);
                     wait_queue.push_back(process);
                 }
 }}}
-            for(auto process : wait_queue){
+            for(auto process : job_list){
             if((current_time - process.start_time) == process.io_duration && process.state == WAITING){
                 execution_status += print_exec_status(current_time, process.PID, process.state, READY);
                 process.state = READY;
@@ -142,7 +144,7 @@ if(current_time - running.start_time == 100 && running.processing_time > 100 && 
         }
         if(ready_queue.empty() && !all_process_terminated(job_list) && wait_queue.empty()){
         for(auto process: job_list){
-            if(process.state != TERMINATED && process.state != RUNNING){ready_queue.push_back(process);}
+            if(process.state != TERMINATED && process.state != RUNNING && process.state != WAITING){ready_queue.push_back(process);}
 }}
         
         /////////////////////////////////////////////////////////////////
@@ -160,8 +162,9 @@ if(current_time - running.start_time == 100 && running.processing_time > 100 && 
                     run_process(process, job_list, ready_queue, current_time);
                     running.state = RUNNING;
                     process.state = RUNNING;
-                    sync_queue(job_list, running);
                     running.start_time = current_time;
+                    sync_queue(job_list, running);
+                    next = running.start_time + running.io_freq;
                     selected = 1;
 } else{
                     execution_status += print_exec_status(current_time, process.PID, process.state, RUNNING);
@@ -171,20 +174,18 @@ if(current_time - running.start_time == 100 && running.processing_time > 100 && 
                     running.io_saved = process.io_saved;
                     running.PID = process.PID;
                     running.state = RUNNING;
+                    running.io_freq = process.io_freq;
                     running.remaining_time = process.remaining_time;
                     running.start_time = current_time;
+                    
+                    next = running.start_time + running.io_freq;
                     selected = 1;
                 }
             }}}
 current_time += 1;
 selected = 0;
-
-if(current_time == 200){
-RR(job_list);
-for(auto process: job_list){
-execution_status += print_exec_status(current_time, process.PID, process.state, NOT_ASSIGNED);
-}break;}
-    }    
+if(current_time == 200){for(auto process: wait_queue){execution_status += print_exec_status(current_time, process.PID, process.state, RUNNING);}break;
+}}
     //Close the output table
     execution_status += print_exec_footer();
 
