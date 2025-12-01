@@ -40,6 +40,7 @@ std::tuple<std::string /* add std::string for bonus mark */ > run_simulation(std
     int selected = 0;
     std::vector<PCB> finished;
     PCB running;
+    int next = -1;
 
     //Initialize an empty running process
     idle_CPU(running);
@@ -87,25 +88,18 @@ if(current_time - running.start_time == 100 && running.processing_time > 100 && 
                 process.processing_time -= 100;
                 process.state = READY;
                 sync_queue(job_list, process);
-                ready_queue.push_back(process);
-                for(auto pro: ready_queue){execution_status += print_exec_status(current_time, pro.PID, pro.state, NEW);}
-                auto it = std::find_if(ready_queue.begin(), ready_queue.end(), [&](PCB s) {
-                return s == process;
-                });
-                std::rotate(ready_queue.begin(), it, ready_queue.end());
-                for(auto pro: ready_queue){execution_status += print_exec_status(current_time, pro.PID, pro.state, pro.state);}
+                sync_queue(ready_queue, process);
                 idle_CPU(running);
                 running.PID = -1;
                 running.remaining_time = 0;
+                running.io_saved = 0;
                 running.state = READY;
 }}}
             for(auto process : job_list){
             if(current_time - running.start_time == process.remaining_time && process == running){
-                
                 execution_status += print_exec_status(current_time, process.PID, process.state, TERMINATED);
-                for(auto pro: ready_queue){execution_status += print_exec_status(250, pro.PID, pro.state, NEW);
-pro.state = READY;
-sync_queue(ready_queue, pro);
+                for(auto pro: ready_queue){pro.state = READY;
+                sync_queue(ready_queue, pro);
 }
                 terminate_process(process, job_list);
                 finished.push_back(running);
@@ -114,21 +108,25 @@ sync_queue(ready_queue, pro);
                 running.remaining_time = 0;
             }
             if(process.io_freq > 0){
-            if(process.PID == running.PID){
-                if((current_time - process.start_time) == process.io_freq){
+            if(process == running){
+                if(current_time == next && process.state == RUNNING) {
                     execution_status += print_exec_status(current_time, process.PID, process.state, WAITING);
-                    process.remaining_time = running.remaining_time;
+                    next = -1;
+                    process.remaining_time -= process.io_freq;
                     process.start_time = current_time;
                     idle_CPU(running);
+                    running.start_time = 0;
                     process.state = WAITING;
+                    process.io_saved = process.holder;
                     sync_queue(job_list, process);
                     wait_queue.push_back(process);
                 }
 }}}
-            for(auto process : wait_queue){
+            for(auto process : job_list){
             if((current_time - process.start_time) == process.io_duration && process.state == WAITING){
                 execution_status += print_exec_status(current_time, process.PID, process.state, READY);
                 process.state = READY;
+                wait_queue.pop_back();
                 sync_queue(job_list, process);
                 ready_queue.push_back(process);
 }}
@@ -140,6 +138,10 @@ sync_queue(ready_queue, pro);
             FCFS(ready_queue); //example of FCFS is shown here
             RR(ready_queue);
         }
+        if(ready_queue.empty() && !all_process_terminated(job_list) && wait_queue.empty()){
+        for(auto process: job_list){
+            if(process.state != TERMINATED && process.state != RUNNING && process.state != WAITING){ready_queue.push_back(process);}
+}}
         
         /////////////////////////////////////////////////////////////////
         
@@ -150,33 +152,34 @@ sync_queue(ready_queue, pro);
                     running.PID = process.PID;
                     running.remaining_time = process.remaining_time;
                     running.processing_time = process.processing_time;
+                    running.io_duration = process.io_duration;
+                    running.io_freq = process.io_freq;
                     execution_status += print_exec_status(current_time, process.PID, process.state, RUNNING);
                     run_process(process, job_list, ready_queue, current_time);
                     running.state = RUNNING;
                     process.state = RUNNING;
+                    running.start_time = current_time;
                     sync_queue(job_list, running);
-                    running.start_time = process.start_time;
+                    next = running.start_time + running.io_freq;
                     selected = 1;
-                    
 } else{
                     execution_status += print_exec_status(current_time, process.PID, process.state, RUNNING);
                     run_process(process, job_list, ready_queue, current_time);
+                    running.io_duration = process.io_duration;
                     sync_queue(job_list, running);
+                    running.io_saved = process.io_saved;
                     running.PID = process.PID;
                     running.state = RUNNING;
+                    running.io_freq = process.io_freq;
                     running.remaining_time = process.remaining_time;
-                    running.start_time = process.start_time;
+                    running.start_time = current_time;
+                    
+                    next = running.start_time + running.io_freq;
                     selected = 1;
                 }
             }}}
 current_time += 1;
-if(current_time == 105){execution_status += print_exec_status(current_time, running.PID, running.state, NOT_ASSIGNED);}
 selected = 0;
-if(current_time == 200){
-RR(job_list);
-for(auto process: job_list){
-execution_status += print_exec_status(current_time, process.PID, process.state, NOT_ASSIGNED);
-}break;}
     }    
     //Close the output table
     execution_status += print_exec_footer();
