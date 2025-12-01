@@ -66,13 +66,13 @@ std::tuple<std::string> run_simulation(std::vector<PCB> list_processes) {
         if(running.state == RUNNING){running.remaining_time = running.remaining_time -1;}
         ///////////////////////MANAGE WAIT QUEUE/////////////////////////
         //This mainly involves keeping track of how long a process must remain in the ready queue
-            for(auto &process : job_list){
+            for(auto process : job_list){
             if(running.remaining_time <= 0 && process.PID == running.PID){
                 execution_status += print_exec_status(current_time, process.PID, process.state, TERMINATED);
                 terminate_process(process, job_list);
                 idle_CPU(running);
             }}
-            for(auto &process : job_list){
+            for(auto process : job_list){
                 if(process.io_freq > 0){
                     if(process.PID == running.PID){
                         if((current_time - process.start_time) == process.io_freq){
@@ -86,7 +86,7 @@ std::tuple<std::string> run_simulation(std::vector<PCB> list_processes) {
                     }
                 }
             }
-            for(auto &process : wait_queue){
+            for(auto process : job_list){
                 if((current_time - process.start_time) == process.io_duration && process.state == WAITING){
                     execution_status += print_exec_status(current_time, process.PID, process.state, READY);
                     process.state = READY;
