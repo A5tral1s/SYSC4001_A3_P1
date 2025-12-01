@@ -184,8 +184,7 @@ if(current_time - running.start_time == 100 && running.processing_time > 100 && 
             }}}
 current_time += 1;
 selected = 0;
-if(current_time == 200){for(auto process: wait_queue){execution_status += print_exec_status(current_time, process.PID, process.state, RUNNING);}break;
-}}
+}
     //Close the output table
     execution_status += print_exec_footer();
 
