@@ -1,0 +1,47 @@
++------------------------------------------------+
+|Time of Transition |PID | Old State | New State |
++------------------------------------------------+
+|                 0 | 10 |       NEW |     READY |
+|                 0 | 10 |     READY |   RUNNING |
+|                 3 |  1 |       NEW |     READY |
+|                10 |  4 |       NEW |     READY |
+|               100 | 10 |   RUNNING |     READY |
+|               100 |  1 |     READY |   RUNNING |
+|               105 |  1 |   RUNNING |TERMINATED |
+|               105 |  4 |     READY |   RUNNING |
+|               109 |  4 |   RUNNING |   WAITING |
+|               109 | 10 |     READY |   RUNNING |
+|               111 | 10 |   RUNNING |   WAITING |
+|               114 | 10 |   WAITING |     READY |
+|               114 |  4 |   WAITING |     READY |
+|               114 |  4 |     READY |   RUNNING |
+|               118 |  4 |   RUNNING |   WAITING |
+|               123 |  4 |   WAITING |     READY |
+|               123 |  4 |     READY |   RUNNING |
+|               127 |  4 |   RUNNING |   WAITING |
+|               132 |  4 |   WAITING |     READY |
+|               132 |  4 |     READY |   RUNNING |
+|               136 |  4 |   RUNNING |   WAITING |
+|               141 |  4 |   WAITING |     READY |
+|               141 |  4 |     READY |   RUNNING |
+|               145 |  4 |   RUNNING |   WAITING |
+|               150 |  4 |   WAITING |     READY |
+|               150 |  4 |     READY |   RUNNING |
+|               154 |  4 |   RUNNING |   WAITING |
+|               159 |  4 |   WAITING |     READY |
+|               159 |  4 |     READY |   RUNNING |
+|               163 |  4 |   RUNNING |   WAITING |
+|               168 |  4 |   WAITING |     READY |
+|               168 |  4 |     READY |   RUNNING |
+|               172 |  4 |   RUNNING |   WAITING |
+|               177 |  4 |   WAITING |     READY |
+|               177 |  4 |     READY |   RUNNING |
+|               181 |  4 |   RUNNING |   WAITING |
+|               186 |  4 |   WAITING |     READY |
+|               186 |  4 |     READY |   RUNNING |
+|               190 |  4 |   RUNNING |   WAITING |
+|               195 |  4 |   WAITING |     READY |
+|               195 |  4 |     READY |   RUNNING |
+|               199 |  4 |   RUNNING |   WAITING |
+|               200 |  4 |   WAITING |   RUNNING |
++------------------------------------------------+
